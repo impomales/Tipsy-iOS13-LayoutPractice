@@ -18,6 +18,7 @@ class CalculatorViewController: UIViewController {
     
     var tipAmount: Double = 0.1
     var splitValue: Double = 2.0
+    var amountOwed: Double = 0.0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,6 +26,16 @@ class CalculatorViewController: UIViewController {
         splitStepper.value = splitValue
     }
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+        if segue.identifier == "goToResults" {
+            let destinationVC = segue.destination as! ResultsViewController
+            destinationVC.total = amountOwed
+            destinationVC.numberOfPeople = Int(splitValue)
+            destinationVC.tipValue = String(format: "%.0f", tipAmount)
+        }
+    }
 
     @IBAction func tipChanged(_ sender: UIButton) {
         billTextField.endEditing(true)
@@ -44,8 +55,9 @@ class CalculatorViewController: UIViewController {
     @IBAction func calculatePressed(_ sender: UIButton) {
         let billTotal = Double(billTextField.text!) ?? 0
         let billTotalWithTip = billTotal + billTotal * tipAmount
-        let amountOwed = (billTotalWithTip / splitValue).rounded()
-        print(amountOwed)
+        amountOwed = billTotalWithTip / splitValue
+        
+        self.performSegue(withIdentifier: "goToResults", sender: self)
     }
     
     private func deselectAllTipButtons() {
