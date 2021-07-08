@@ -16,14 +16,12 @@ class CalculatorViewController: UIViewController {
     @IBOutlet weak var splitNumberLabel: UILabel!
     @IBOutlet weak var splitStepper: UIStepper!
     
-    var tipAmount: Double = 0.1
-    var splitValue: Double = 2.0
-    var amountOwed: Double = 0.0
+    var tipCalculator = TipCalculator()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        splitStepper.value = splitValue
+        splitStepper.value = Double(tipCalculator.splitValue)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -31,9 +29,9 @@ class CalculatorViewController: UIViewController {
         // Pass the selected object to the new view controller.
         if segue.identifier == "goToResults" {
             let destinationVC = segue.destination as! ResultsViewController
-            destinationVC.total = amountOwed
-            destinationVC.numberOfPeople = Int(splitValue)
-            destinationVC.tipValue = String(format: "%.0f", tipAmount)
+            destinationVC.total = tipCalculator.calculateTip(billAmount: Double(billTextField.text!) ?? 0)
+            destinationVC.numberOfPeople = tipCalculator.splitValue
+            destinationVC.tipValue = String(format: "%.0f", tipCalculator.tipAmount * 100)
         }
     }
 
@@ -44,19 +42,15 @@ class CalculatorViewController: UIViewController {
         sender.isSelected = true
         
         let tipStrValue = String(sender.currentTitle!.dropLast())
-        tipAmount = Double(tipStrValue)! / 100
+        tipCalculator.setTipAmount(Double(tipStrValue)! / 100)
     }
     
     @IBAction func stepperVAlueChanged(_ sender: UIStepper) {
-        splitValue = sender.value
-        splitNumberLabel.text = String(format: "%.0f", splitValue)
+        tipCalculator.setSplitValue(Int(sender.value))
+        splitNumberLabel.text = String(format: "%.0f", Double(tipCalculator.splitValue))
     }
     
     @IBAction func calculatePressed(_ sender: UIButton) {
-        let billTotal = Double(billTextField.text!) ?? 0
-        let billTotalWithTip = billTotal + billTotal * tipAmount
-        amountOwed = billTotalWithTip / splitValue
-        
         self.performSegue(withIdentifier: "goToResults", sender: self)
     }
     
